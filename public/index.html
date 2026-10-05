@@ -120,16 +120,6 @@
       .footer { margin-top: 20px; color: #52525b; font-size: 10px; text-align: center; }
       .toast { position: fixed; right: 22px; bottom: 22px; z-index: 10; max-width: min(380px, calc(100vw - 32px)); border: 1px solid #3f3f46; border-radius: 8px; background: #18181b; box-shadow: 0 12px 40px #0008; color: #e4e4e7; padding: 12px 15px; font-size: 12px; opacity: 0; pointer-events: none; transform: translateY(8px); transition: .2s; }
       .toast.show { opacity: 1; transform: translateY(0); }
-      .modal-backdrop { position: fixed; inset: 0; z-index: 20; display: none; place-items: center; background: #0009; padding: 18px; }
-      .modal-backdrop.open { display: grid; }
-      .modal { width: min(100%, 420px); border: 1px solid var(--border); border-radius: 12px; background: #111113; box-shadow: 0 24px 90px #0008; padding: 20px; }
-      .modal-title { margin: 0; font-size: 16px; font-weight: 600; }
-      .modal-copy { margin: 7px 0 18px; color: var(--muted-foreground); font-size: 12px; line-height: 1.6; }
-      .field-label { display: block; margin-bottom: 7px; color: #d4d4d8; font-size: 11px; font-weight: 550; }
-      .input { width: 100%; height: 37px; border: 1px solid var(--input); border-radius: 7px; outline: none; background: #09090b; color: #f4f4f5; padding: 0 11px; }
-      .input:focus { border-color: #a1a1aa; box-shadow: 0 0 0 2px #a1a1aa26; }
-      .modal-help { margin: 7px 0 17px; color: #71717a; font-size: 10px; line-height: 1.5; }
-      .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
       .mobile-menu { display: none; }
       @media (max-width: 1050px) { .stats { grid-template-columns: repeat(2, minmax(0,1fr)); } .columns { grid-template-columns: minmax(0,1fr); } .right-stack { grid-template-columns: repeat(2,minmax(0,1fr)); } }
       @media (max-width: 720px) {
@@ -180,7 +170,7 @@
       <main class="main" id="overview">
         <header class="topbar">
           <div class="breadcrumbs">Workspace <span style="padding:0 7px;color:#52525b">/</span> <strong>Overview</strong></div>
-          <div class="top-actions"><span class="online"><span class="dot"></span>Cloudflare active</span><button class="button button-primary" id="runButton"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1"/><circle cx="12" cy="12" r="5"/></svg><span>Run scan</span></button></div>
+          <div class="top-actions"><span class="online"><span class="dot"></span>Automatic scans · Daily at 07:17 UTC</span></div>
         </header>
 
         <div class="content">
@@ -221,14 +211,6 @@
     </div>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <div class="modal-backdrop" id="tokenModal" role="presentation">
-      <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-        <h2 class="modal-title" id="modalTitle">Run scan</h2>
-        <p class="modal-copy">Enter the secure access token to trigger a scan. It will be stored only in this browser.</p>
-        <form id="tokenForm"><label class="field-label" for="runToken">Worker access token</label><input class="input" id="runToken" type="password" autocomplete="current-password" required /><p class="modal-help">Find it in the private <code>.dev.vars</code> file as <code>RADAR_RUN_TOKEN</code>.</p><div class="modal-actions"><button class="button" type="button" id="cancelToken">Cancel</button><button class="button button-primary" type="submit">Save &amp; run</button></div></form>
-      </section>
-    </div>
-
     <script>
       const $ = (selector) => document.querySelector(selector);
       const escapeHtml = (value) => value.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
@@ -250,8 +232,7 @@
         return hasContent ? container : null;
       }
       function renderEmpty(title, copy) {
-        $("#reportBody").innerHTML = `<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.5"/><path d="m12 12 6-6"/></svg></div><h3 class="empty-title">${escapeHtml(title)}</h3><p class="empty-copy">${escapeHtml(copy)}</p><button class="button button-primary" data-run-from-empty>Run scan</button></div>`;
-        $("[data-run-from-empty]").addEventListener("click", requestRun);
+        $("#reportBody").innerHTML = `<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.5"/><path d="m12 12 6-6"/></svg></div><h3 class="empty-title">${escapeHtml(title)}</h3><p class="empty-copy">${escapeHtml(copy)}</p></div>`;
       }
       async function showReport(date) {
         const response = await fetch(`/api/reports/${encodeURIComponent(date)}`);
@@ -310,25 +291,7 @@
         } catch (error) { toast(error.message || "Dashboard could not load."); renderEmpty("Could not load data", "Could not connect to the Cloudflare Worker. Try refreshing."); }
         finally { $("#refreshButton").disabled = false; }
       }
-      function openTokenModal() { $("#runToken").value = localStorage.getItem("radar_run_token") || ""; $("#tokenModal").classList.add("open"); setTimeout(() => $("#runToken").focus(), 50); }
-      function closeTokenModal() { $("#tokenModal").classList.remove("open"); }
-      async function requestRun() {
-        const token = localStorage.getItem("radar_run_token");
-        if (!token) { openTokenModal(); return; }
-        const button = $("#runButton"); button.disabled = true;
-        try {
-          const response = await fetch("/run", { method: "POST", headers: { Authorization: `Bearer ${token}` } });
-          if (response.status === 401) { localStorage.removeItem("radar_run_token"); openTokenModal(); throw new Error("Invalid token. Enter the correct Worker access token."); }
-          const result = await response.json(); if (!response.ok) throw new Error(result.error || "Could not start the scan.");
-          toast("Scan started. New signals will appear here when detected.");
-        } catch (error) { toast(error.message || "Could not start the scan."); }
-        finally { setTimeout(() => { button.disabled = false; }, 1200); }
-      }
-      $("#runButton").addEventListener("click", requestRun);
       $("#refreshButton").addEventListener("click", loadDashboard);
-      $("#cancelToken").addEventListener("click", closeTokenModal);
-      $("#tokenModal").addEventListener("click", (event) => { if (event.target === $("#tokenModal")) closeTokenModal(); });
-      $("#tokenForm").addEventListener("submit", async (event) => { event.preventDefault(); const token = $("#runToken").value.trim(); if (!token) return; localStorage.setItem("radar_run_token", token); closeTokenModal(); await requestRun(); });
       document.querySelectorAll("[data-section]").forEach((button) => button.addEventListener("click", () => {
         document.querySelectorAll("[data-section]").forEach((item) => item.classList.toggle("active", item === button));
         document.getElementById(button.dataset.section).scrollIntoView({ behavior: "smooth", block: "start" });

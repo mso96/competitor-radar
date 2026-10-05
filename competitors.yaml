@@ -1,0 +1,19 @@
+company: my-company
+
+settings:
+  search_provider: ceramic
+  search_results_per_query: 5
+
+competitors:
+  - name: Linear
+    domain: linear.app
+    pages:
+      homepage: https://linear.app
+      pricing: https://linear.app/pricing
+      changelog: https://linear.app/changelog
+
+  - name: Attio
+    domain: attio.com
+    pages:
+      homepage: https://attio.com
+      pricing: https://attio.com/pricing

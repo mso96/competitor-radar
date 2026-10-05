@@ -1,0 +1,19 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "competitor-radar",
+  "main": "cloudflare/worker.ts",
+  "compatibility_date": "2026-10-05",
+  "compatibility_flags": ["nodejs_compat"],
+  "base_dir": ".",
+  "rules": [{ "type": "Text", "globs": ["**/*.yaml"], "fallthrough": true }],
+  "r2_buckets": [{ "binding": "STATE", "bucket_name": "competitor-radar-state" }],
+  "triggers": { "crons": ["17 7 * * *"] },
+  "limits": { "cpu_ms": 30000, "subrequests": 500 },
+  "secrets": { "required": ["OPENAI_API_KEY", "CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_API_TOKEN", "SLACK_WEBHOOK_URL", "RADAR_RUN_TOKEN"] },
+  "vars": {
+    "OPENAI_MODEL": "gpt-4.1-mini",
+    "CLOUDFLARE_AI_GATEWAY_ID": "default",
+    "CLOUDFLARE_SEARCH_PROVIDER": "ceramic"
+  },
+  "observability": { "enabled": true, "head_sampling_rate": 1 }
+}

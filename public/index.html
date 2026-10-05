@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="tr" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#09090b" />
+    <meta name="description" content="Competitor Radar — rakip hareketlerini gürültüsüz izle." />
+    <title>Competitor Radar</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --background: #09090b;
+        --foreground: #fafafa;
+        --card: #101012;
+        --muted: #18181b;
+        --muted-foreground: #a1a1aa;
+        --border: #27272a;
+        --input: #27272a;
+        --primary: #f4f4f5;
+        --primary-foreground: #18181b;
+        --accent: #c4f06b;
+        --accent-soft: #c4f06b1c;
+        --destructive: #ef4444;
+        --radius: 10px;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-width: 320px; min-height: 100vh; background: var(--background); color: var(--foreground); font-size: 14px; }
+      button, input { font: inherit; }
+      button { color: inherit; }
+      .shell { min-height: 100vh; }
+      .sidebar { position: fixed; inset: 0 auto 0 0; z-index: 2; display: flex; width: 244px; flex-direction: column; border-right: 1px solid var(--border); background: #0c0c0e; padding: 22px 14px 14px; }
+      .brand { display: flex; align-items: center; gap: 11px; padding: 0 9px 25px; }
+      .brand-mark { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 10px; background: var(--accent); color: #171a0d; }
+      .brand-mark svg { width: 20px; height: 20px; }
+      .brand-name { font-size: 14px; font-weight: 650; letter-spacing: -.02em; }
+      .brand-sub { margin-top: 2px; color: var(--muted-foreground); font-size: 11px; }
+      .workspace { display: flex; align-items: center; justify-content: space-between; margin: 0 2px 23px; border: 1px solid var(--border); border-radius: 8px; padding: 10px; }
+      .workspace-left { display: flex; align-items: center; gap: 9px; min-width: 0; }
+      .workspace-avatar { display: grid; width: 25px; height: 25px; flex: 0 0 auto; place-items: center; border-radius: 7px; background: #242426; color: #d4d4d8; font-size: 11px; font-weight: 700; }
+      .workspace-name { overflow: hidden; color: #e4e4e7; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+      .workspace-plan { margin-top: 2px; color: #71717a; font-size: 10px; }
+      .nav-label { margin: 0 10px 8px; color: #71717a; font-size: 10px; font-weight: 600; letter-spacing: .09em; text-transform: uppercase; }
+      .nav { display: grid; gap: 3px; }
+      .nav-button { display: flex; width: 100%; align-items: center; gap: 10px; border: 0; border-radius: 7px; background: transparent; color: #a1a1aa; cursor: pointer; padding: 9px 10px; text-align: left; transition: background .15s, color .15s; }
+      .nav-button:hover { background: #18181b; color: #e4e4e7; }
+      .nav-button.active { background: #202022; color: #fafafa; }
+      .nav-button svg { width: 16px; height: 16px; color: #8d8d96; }
+      .nav-button.active svg { color: var(--accent); }
+      .nav-count { margin-left: auto; color: #71717a; font-size: 11px; }
+      .sidebar-bottom { margin-top: auto; }
+      .side-status { display: flex; align-items: center; gap: 9px; margin: 0 3px; border-top: 1px solid var(--border); padding: 16px 8px 5px; color: #a1a1aa; font-size: 11px; }
+      .dot { width: 7px; height: 7px; flex: 0 0 auto; border-radius: 50%; background: var(--accent); box-shadow: 0 0 9px #c4f06666; }
+      .side-version { margin: 12px 10px 2px; color: #52525b; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px; }
+      .main { min-height: 100vh; margin-left: 244px; }
+      .topbar { display: flex; min-height: 62px; align-items: center; justify-content: space-between; gap: 18px; border-bottom: 1px solid var(--border); padding: 0 34px; }
+      .breadcrumbs { color: #71717a; font-size: 12px; }
+      .breadcrumbs strong { color: #d4d4d8; font-weight: 500; }
+      .top-actions { display: flex; align-items: center; gap: 10px; }
+      .online { display: inline-flex; align-items: center; gap: 7px; color: #a1a1aa; font-size: 11px; }
+      .online .dot { width: 6px; height: 6px; }
+      .button { display: inline-flex; min-height: 34px; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--border); border-radius: 7px; background: transparent; color: #e4e4e7; cursor: pointer; padding: 0 12px; transition: background .15s, border-color .15s, transform .15s; }
+      .button:hover { border-color: #3f3f46; background: #18181b; }
+      .button:active { transform: translateY(1px); }
+      .button svg { width: 15px; height: 15px; }
+      .button-primary { border-color: var(--accent); background: var(--accent); color: #191d10; font-weight: 650; }
+      .button-primary:hover { border-color: #d4fa85; background: #d4fa85; }
+      .button:disabled { cursor: wait; opacity: .7; }
+      .content { width: min(100%, 1320px); margin: 0 auto; padding: 34px; }
+      .page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 25px; }
+      .eyebrow { margin-bottom: 8px; color: #8b8b95; font-size: 10px; font-weight: 600; letter-spacing: .11em; text-transform: uppercase; }
+      h1 { margin: 0; font-size: clamp(25px, 3vw, 31px); font-weight: 610; letter-spacing: -.045em; }
+      .subtitle { margin: 7px 0 0; color: var(--muted-foreground); font-size: 13px; }
+      .stats { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 13px; margin-bottom: 18px; }
+      .card { border: 1px solid var(--border); border-radius: var(--radius); background: var(--card); }
+      .stat-card { min-height: 112px; padding: 16px; }
+      .stat-top { display: flex; align-items: center; justify-content: space-between; color: var(--muted-foreground); font-size: 12px; }
+      .stat-icon { display: grid; width: 27px; height: 27px; place-items: center; border: 1px solid var(--border); border-radius: 7px; color: #a1a1aa; }
+      .stat-icon svg { width: 14px; height: 14px; }
+      .stat-value { margin-top: 12px; font-size: 23px; font-weight: 590; letter-spacing: -.04em; }
+      .stat-note { margin-top: 3px; color: #71717a; font-size: 11px; }
+      .columns { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, .9fr); gap: 16px; align-items: start; }
+      .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--border); padding: 17px 18px 15px; }
+      .card-title { margin: 0; font-size: 13px; font-weight: 590; letter-spacing: -.01em; }
+      .card-description { margin: 5px 0 0; color: var(--muted-foreground); font-size: 11px; }
+      .badge { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); border-radius: 999px; color: #a1a1aa; font-size: 10px; padding: 4px 8px; white-space: nowrap; }
+      .badge-accent { border-color: #c4f06633; background: var(--accent-soft); color: var(--accent); }
+      .report-body { min-height: 285px; padding: 20px 19px; }
+      .empty-state { display: grid; min-height: 245px; align-content: center; justify-items: center; padding: 22px; text-align: center; }
+      .empty-icon { display: grid; width: 42px; height: 42px; place-items: center; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 12px; background: #171719; color: var(--accent); }
+      .empty-icon svg { width: 20px; height: 20px; }
+      .empty-title { margin: 0; font-size: 14px; font-weight: 580; }
+      .empty-copy { max-width: 350px; margin: 7px 0 15px; color: var(--muted-foreground); font-size: 12px; line-height: 1.6; }
+      .report-content h2 { margin: 20px 0 7px; color: var(--accent); font-size: 12px; font-weight: 650; letter-spacing: .06em; }
+      .report-content h2:first-child { margin-top: 0; }
+      .report-content h3 { margin: 17px 0 6px; font-size: 13px; font-weight: 600; }
+      .report-content p { margin: 6px 0; color: #c7c7ce; font-size: 12px; line-height: 1.65; }
+      .report-content a { color: #c4f06b; text-decoration: none; }
+      .report-content a:hover { text-decoration: underline; }
+      .report-content strong { color: #e4e4e7; font-weight: 600; }
+      .report-meta { display: flex; align-items: center; gap: 7px; margin: 0 0 15px; color: #71717a; font-size: 11px; }
+      .report-meta svg { width: 13px; height: 13px; }
+      .right-stack { display: grid; gap: 16px; }
+      .competitor-list { padding: 4px 17px; }
+      .competitor-row { display: flex; align-items: center; gap: 11px; border-bottom: 1px solid #222225; padding: 13px 0; }
+      .competitor-row:last-child { border-bottom: 0; }
+      .competitor-logo { display: grid; width: 32px; height: 32px; flex: 0 0 auto; place-items: center; border: 1px solid #313136; border-radius: 9px; background: #19191c; color: #e4e4e7; font-size: 11px; font-weight: 650; }
+      .competitor-main { min-width: 0; flex: 1; }
+      .competitor-name { font-size: 12px; font-weight: 550; }
+      .competitor-domain { overflow: hidden; margin-top: 3px; color: #71717a; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+      .page-count { color: #a1a1aa; font-size: 10px; white-space: nowrap; }
+      .report-list { display: grid; gap: 2px; padding: 8px; }
+      .report-item { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 12px; border: 0; border-radius: 6px; background: transparent; color: #a1a1aa; cursor: pointer; padding: 9px; text-align: left; }
+      .report-item:hover, .report-item.selected { background: #1b1b1e; color: #f4f4f5; }
+      .report-item-date { font-size: 11px; }
+      .report-item-arrow { color: #71717a; font-size: 12px; }
+      .report-list-empty { padding: 12px; color: #71717a; font-size: 11px; }
+      .alert { display: flex; align-items: flex-start; gap: 9px; margin: 0 0 16px; border: 1px solid #854d0e55; border-radius: 8px; background: #854d0e12; color: #fcd34d; padding: 11px 13px; font-size: 11px; line-height: 1.5; }
+      .alert svg { width: 15px; height: 15px; flex: 0 0 auto; margin-top: 1px; }
+      .footer { margin-top: 20px; color: #52525b; font-size: 10px; text-align: center; }
+      .toast { position: fixed; right: 22px; bottom: 22px; z-index: 10; max-width: min(380px, calc(100vw - 32px)); border: 1px solid #3f3f46; border-radius: 8px; background: #18181b; box-shadow: 0 12px 40px #0008; color: #e4e4e7; padding: 12px 15px; font-size: 12px; opacity: 0; pointer-events: none; transform: translateY(8px); transition: .2s; }
+      .toast.show { opacity: 1; transform: translateY(0); }
+      .modal-backdrop { position: fixed; inset: 0; z-index: 20; display: none; place-items: center; background: #0009; padding: 18px; }
+      .modal-backdrop.open { display: grid; }
+      .modal { width: min(100%, 420px); border: 1px solid var(--border); border-radius: 12px; background: #111113; box-shadow: 0 24px 90px #0008; padding: 20px; }
+      .modal-title { margin: 0; font-size: 16px; font-weight: 600; }
+      .modal-copy { margin: 7px 0 18px; color: var(--muted-foreground); font-size: 12px; line-height: 1.6; }
+      .field-label { display: block; margin-bottom: 7px; color: #d4d4d8; font-size: 11px; font-weight: 550; }
+      .input { width: 100%; height: 37px; border: 1px solid var(--input); border-radius: 7px; outline: none; background: #09090b; color: #f4f4f5; padding: 0 11px; }
+      .input:focus { border-color: #a1a1aa; box-shadow: 0 0 0 2px #a1a1aa26; }
+      .modal-help { margin: 7px 0 17px; color: #71717a; font-size: 10px; line-height: 1.5; }
+      .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+      .mobile-menu { display: none; }
+      @media (max-width: 1050px) { .stats { grid-template-columns: repeat(2, minmax(0,1fr)); } .columns { grid-template-columns: minmax(0,1fr); } .right-stack { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+      @media (max-width: 720px) {
+        .sidebar { position: static; width: auto; height: auto; border-right: 0; border-bottom: 1px solid var(--border); padding: 13px 15px 10px; }
+        .brand { padding: 0 2px 12px; }
+        .workspace, .nav-label, .sidebar-bottom { display: none; }
+        .nav { display: flex; gap: 4px; overflow-x: auto; }
+        .nav-button { width: auto; flex: 0 0 auto; padding: 8px 10px; font-size: 11px; }
+        .nav-count { display: none; }
+        .main { margin-left: 0; }
+        .topbar { min-height: 53px; padding: 0 16px; }
+        .online { display: none; }
+        .content { padding: 24px 16px; }
+        .page-heading { align-items: flex-start; }
+        .page-heading .button { min-height: 32px; padding: 0 9px; font-size: 11px; }
+        .page-heading .button svg { width: 14px; }
+        .stats { gap: 9px; }
+        .stat-card { min-height: 100px; padding: 12px; }
+        .stat-top { font-size: 10px; }
+        .stat-value { font-size: 20px; }
+        .right-stack { grid-template-columns: 1fr; }
+        .card-head { padding: 14px; }
+        .report-body { padding: 16px 14px; }
+      }
+      @media (max-width: 390px) { .stats { grid-template-columns: 1fr 1fr; } .stat-icon { display: none; } .page-heading { display: grid; } }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar" aria-label="Ana gezinme">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg></div>
+          <div><div class="brand-name">Competitor Radar</div><div class="brand-sub">Pazar istihbaratı</div></div>
+        </div>
+        <div class="workspace">
+          <div class="workspace-left"><div class="workspace-avatar">CR</div><div><div class="workspace-name">Çalışma alanım</div><div class="workspace-plan">Cloud Edition</div></div></div>
+          <span aria-hidden="true" style="color:#71717a">⌄</span>
+        </div>
+        <div class="nav-label">Çalışma alanı</div>
+        <nav class="nav">
+          <button class="nav-button active" data-section="overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7" height="8" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="11" width="7" height="10" rx="1.5"/><rect x="3" y="15" width="7" height="6" rx="1.5"/></svg>Genel bakış</button>
+          <button class="nav-button" data-section="competitors"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="8" r="3.5"/><path d="M2.8 20a6.2 6.2 0 0 1 12.4 0m2-8.2a3.5 3.5 0 0 0 0-6.7M17 14a6 6 0 0 1 4.2 5.7"/></svg>Rakipler <span class="nav-count" id="navCompetitorCount">—</span></button>
+          <button class="nav-button" data-section="reports"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8m-8 4h8"/></svg>Raporlar <span class="nav-count" id="navReportCount">—</span></button>
+        </nav>
+        <div class="sidebar-bottom"><div class="side-status"><span class="dot"></span>Worker çevrimiçi</div><div class="side-version">COMPETITOR-RADAR · V1</div></div>
+      </aside>
+
+      <main class="main" id="overview">
+        <header class="topbar">
+          <div class="breadcrumbs">Çalışma alanı <span style="padding:0 7px;color:#52525b">/</span> <strong>Genel bakış</strong></div>
+          <div class="top-actions"><span class="online"><span class="dot"></span>Cloudflare aktif</span><button class="button button-primary" id="runButton"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1"/><circle cx="12" cy="12" r="5"/></svg><span>Taramayı başlat</span></button></div>
+        </header>
+
+        <div class="content">
+          <div class="page-heading">
+            <div><div class="eyebrow">Pazar istihbaratı</div><h1>Genel bakış</h1><p class="subtitle">Rakip hareketlerini gürültüsüz izle.</p></div>
+            <button class="button" id="refreshButton"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9a7 7 0 0 1 11.6-2L20 12M4 12l2.8 5a7 7 0 0 0 11.6-2"/></svg>Yenile</button>
+          </div>
+
+          <div class="alert" id="slackAlert" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v4m0 4h.01"/></svg><span>Slack bağlantısı henüz eklenmedi. Raporlar arşivlenir; bildirim göndermek için webhook bağlantısı gerekir.</span></div>
+
+          <section class="stats" aria-label="Özet">
+            <article class="card stat-card"><div class="stat-top"><span>İzlenen rakip</span><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="8" r="3.5"/><path d="M2.8 20a6.2 6.2 0 0 1 12.4 0m2-8.2a3.5 3.5 0 0 0 0-6.7M17 14a6 6 0 0 1 4.2 5.7"/></svg></span></div><div class="stat-value" id="statCompetitors">—</div><div class="stat-note">Takip listendeki şirketler</div></article>
+            <article class="card stat-card"><div class="stat-top"><span>Son rapor</span><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span></div><div class="stat-value" id="statLatest">—</div><div class="stat-note" id="latestNote">Henüz tarama raporu yok</div></article>
+            <article class="card stat-card"><div class="stat-top"><span>Tarama sıklığı</span><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg></span></div><div class="stat-value">Her gün</div><div class="stat-note">Saat 07:17 UTC</div></article>
+            <article class="card stat-card"><div class="stat-top"><span>Arşivlenen rapor</span><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 4h18v4H3zM5 8v12h14V8m-9 4h4"/></svg></span></div><div class="stat-value" id="statReports">—</div><div class="stat-note">Cloudflare R2 arşivi</div></article>
+          </section>
+
+          <section class="columns">
+            <article class="card" id="reports">
+              <div class="card-head"><div><h2 class="card-title">Son istihbarat</h2><p class="card-description">Doğrulanmış değişiklikler ve kısa analiz</p></div><span class="badge" id="reportDateBadge">Günlük tarama</span></div>
+              <div class="report-body" id="reportBody"><div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.5"/><path d="m12 12 6-6"/></svg></div><h3 class="empty-title">Raporlar yükleniyor</h3><p class="empty-copy">Rakip hareketleri burada görünecek.</p></div></div>
+            </article>
+
+            <div class="right-stack">
+              <article class="card" id="competitors">
+                <div class="card-head"><div><h2 class="card-title">Takip edilen rakipler</h2><p class="card-description">Yapılandırmandaki şirketler</p></div><span class="badge badge-accent" id="competitorBadge">— şirket</span></div>
+                <div class="competitor-list" id="competitorList"><div class="report-list-empty">Liste yükleniyor…</div></div>
+              </article>
+              <article class="card">
+                <div class="card-head"><div><h2 class="card-title">Rapor geçmişi</h2><p class="card-description">R2’de saklanan günlük özetler</p></div><span class="badge" id="historyCount">—</span></div>
+                <div class="report-list" id="reportList"><div class="report-list-empty">Henüz rapor yok.</div></div>
+              </article>
+            </div>
+          </section>
+          <div class="footer">Competitor Radar · Günlük tarama · Raporlar Cloudflare R2’de saklanır</div>
+        </div>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div class="modal-backdrop" id="tokenModal" role="presentation">
+      <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <h2 class="modal-title" id="modalTitle">Taramayı başlat</h2>
+        <p class="modal-copy">Bu Worker’ı elle çalıştırmak için güvenli erişim anahtarını gir. Anahtar yalnızca bu tarayıcıda saklanır.</p>
+        <form id="tokenForm"><label class="field-label" for="runToken">Worker erişim anahtarı</label><input class="input" id="runToken" type="password" autocomplete="current-password" required /><p class="modal-help">Anahtar, proje klasöründeki gizli <code>.dev.vars</code> dosyasında <code>RADAR_RUN_TOKEN</code> adıyla bulunur.</p><div class="modal-actions"><button class="button" type="button" id="cancelToken">Vazgeç</button><button class="button button-primary" type="submit">Kaydet ve tara</button></div></form>
+      </section>
+    </div>
+
+    <script>
+      const $ = (selector) => document.querySelector(selector);
+      const escapeHtml = (value) => value.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+      const inlineMarkdown = (value) => escapeHtml(value).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
+      let toastTimer;
+      function toast(message) { const element = $("#toast"); element.textContent = message; element.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => element.classList.remove("show"), 3600); }
+      function formatDate(date) { return new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(date + "T12:00:00Z")); }
+      function renderMarkdown(markdown) {
+        const container = document.createElement("div"); container.className = "report-content";
+        let hasContent = false;
+        for (const rawLine of markdown.split("\n")) {
+          const line = rawLine.trim(); if (!line || line.startsWith("# Competitor Radar")) continue;
+          let element;
+          if (line.startsWith("## ")) { element = document.createElement("h2"); element.textContent = line.slice(3); }
+          else if (line.startsWith("### ")) { element = document.createElement("h3"); element.textContent = line.slice(4); }
+          else { element = document.createElement("p"); element.innerHTML = inlineMarkdown(line); }
+          container.append(element); hasContent = true;
+        }
+        return hasContent ? container : null;
+      }
+      function renderEmpty(title, copy) {
+        $("#reportBody").innerHTML = `<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.5"/><path d="m12 12 6-6"/></svg></div><h3 class="empty-title">${escapeHtml(title)}</h3><p class="empty-copy">${escapeHtml(copy)}</p><button class="button button-primary" data-run-from-empty>Şimdi tara</button></div>`;
+        $("[data-run-from-empty]").addEventListener("click", requestRun);
+      }
+      async function showReport(date) {
+        const response = await fetch(`/api/reports/${encodeURIComponent(date)}`);
+        if (!response.ok) throw new Error("Rapor açılamadı.");
+        const markdown = await response.text(); const report = renderMarkdown(markdown);
+        $("#reportBody").replaceChildren();
+        if (report) $("#reportBody").append(report); else renderEmpty("Bu raporda yeni sinyal yok", "Yeni bir değişiklik bulunduğunda raporda görünecek.");
+        $("#reportDateBadge").textContent = formatDate(date);
+        document.querySelectorAll(".report-item").forEach((button) => button.classList.toggle("selected", button.dataset.date === date));
+      }
+      function renderCompetitors(competitors) {
+        $("#competitorList").replaceChildren();
+        if (!competitors.length) { $("#competitorList").innerHTML = '<div class="report-list-empty">Henüz rakip eklenmemiş. <code>competitors.yaml</code> dosyasını düzenle.</div>'; return; }
+        for (const competitor of competitors) {
+          const row = document.createElement("div"); row.className = "competitor-row";
+          const logo = document.createElement("div"); logo.className = "competitor-logo"; logo.textContent = competitor.name.slice(0, 1).toUpperCase();
+          const main = document.createElement("div"); main.className = "competitor-main";
+          const name = document.createElement("div"); name.className = "competitor-name"; name.textContent = competitor.name;
+          const domain = document.createElement("div"); domain.className = "competitor-domain"; domain.textContent = competitor.domain;
+          main.append(name, domain);
+          const count = document.createElement("span"); count.className = "page-count"; count.textContent = `${competitor.pages.length} sayfa`;
+          row.append(logo, main, count); $("#competitorList").append(row);
+        }
+      }
+      function renderReports(dates) {
+        $("#reportList").replaceChildren();
+        if (!dates.length) { $("#reportList").innerHTML = '<div class="report-list-empty">Henüz arşivlenmiş rapor yok.</div>'; return; }
+        for (const date of dates.slice(0, 8)) {
+          const button = document.createElement("button"); button.className = "report-item"; button.dataset.date = date;
+          const label = document.createElement("span"); label.className = "report-item-date"; label.textContent = formatDate(date);
+          const arrow = document.createElement("span"); arrow.className = "report-item-arrow"; arrow.textContent = "↗";
+          button.append(label, arrow); button.addEventListener("click", () => showReport(date).catch(() => toast("Rapor yüklenemedi.")));
+          $("#reportList").append(button);
+        }
+      }
+      async function loadDashboard() {
+        $("#refreshButton").disabled = true;
+        try {
+          const response = await fetch("/api/overview", { cache: "no-store" });
+          if (!response.ok) throw new Error("Dashboard bilgileri alınamadı.");
+          const data = await response.json();
+          const competitors = Array.isArray(data.competitors) ? data.competitors : [];
+          const dates = Array.isArray(data.reportDates) ? data.reportDates : [];
+          $("#statCompetitors").textContent = String(competitors.length);
+          $("#statReports").textContent = String(dates.length);
+          $("#statLatest").textContent = data.latestReportDate ? formatDate(data.latestReportDate) : "—";
+          $("#latestNote").textContent = data.latestReportDate ? "En son kaydedilen rapor" : "Henüz tarama raporu yok";
+          $("#navCompetitorCount").textContent = String(competitors.length);
+          $("#navReportCount").textContent = String(dates.length);
+          $("#competitorBadge").textContent = `${competitors.length} şirket`;
+          $("#historyCount").textContent = `${dates.length} kayıt`;
+          $("#slackAlert").hidden = Boolean(data.slackConnected);
+          renderCompetitors(competitors); renderReports(dates);
+          if (data.latestReportDate) await showReport(data.latestReportDate);
+          else renderEmpty("Henüz rapor yok", "İlk tarama başlangıç verilerini hazırlar. Yeni bir rakip sinyali bulunduğunda rapor burada görünür.");
+        } catch (error) { toast(error.message || "Dashboard yüklenemedi."); renderEmpty("Veri yüklenemedi", "Cloudflare Worker’a bağlanırken bir sorun oldu. Yenile düğmesini deneyebilirsin."); }
+        finally { $("#refreshButton").disabled = false; }
+      }
+      function openTokenModal() { $("#runToken").value = localStorage.getItem("radar_run_token") || ""; $("#tokenModal").classList.add("open"); setTimeout(() => $("#runToken").focus(), 50); }
+      function closeTokenModal() { $("#tokenModal").classList.remove("open"); }
+      async function requestRun() {
+        const token = localStorage.getItem("radar_run_token");
+        if (!token) { openTokenModal(); return; }
+        const button = $("#runButton"); button.disabled = true;
+        try {
+          const response = await fetch("/run", { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+          if (response.status === 401) { localStorage.removeItem("radar_run_token"); openTokenModal(); throw new Error("Anahtar geçersiz. Doğru Worker erişim anahtarını gir."); }
+          const result = await response.json(); if (!response.ok) throw new Error(result.error || "Tarama başlatılamadı.");
+          toast("Tarama başlatıldı. Yeni sinyaller bulunursa rapor burada görünecek.");
+        } catch (error) { toast(error.message || "Tarama başlatılamadı."); }
+        finally { setTimeout(() => { button.disabled = false; }, 1200); }
+      }
+      $("#runButton").addEventListener("click", requestRun);
+      $("#refreshButton").addEventListener("click", loadDashboard);
+      $("#cancelToken").addEventListener("click", closeTokenModal);
+      $("#tokenModal").addEventListener("click", (event) => { if (event.target === $("#tokenModal")) closeTokenModal(); });
+      $("#tokenForm").addEventListener("submit", async (event) => { event.preventDefault(); const token = $("#runToken").value.trim(); if (!token) return; localStorage.setItem("radar_run_token", token); closeTokenModal(); await requestRun(); });
+      document.querySelectorAll("[data-section]").forEach((button) => button.addEventListener("click", () => {
+        document.querySelectorAll("[data-section]").forEach((item) => item.classList.toggle("active", item === button));
+        document.getElementById(button.dataset.section).scrollIntoView({ behavior: "smooth", block: "start" });
+      }));
+      loadDashboard();
+    </script>
+  </body>
+</html>

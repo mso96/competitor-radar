@@ -19,6 +19,18 @@ export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {
     const url = new URL(request.url);
     if (request.method === "GET" && url.pathname === "/health") return Response.json({ status: "ok", service: "competitor-radar" });
+    if (request.method === "GET" && url.pathname === "/api/overview") {
+      const config = YAML.parse(configText) as { company: string; competitors: Competitor[] };
+      const reports = await listReportDates(env);
+      return Response.json({ company: config.company, competitors: config.competitors.map((competitor) => ({ name: competitor.name, domain: competitor.domain, pages: Object.keys(competitor.pages || {}) })), latestReportDate: reports[0] || null, reportDates: reports, slackConnected: Boolean(env.SLACK_WEBHOOK_URL?.trim()), schedule: "07:17 UTC" });
+    }
+    if (request.method === "GET" && url.pathname === "/api/reports") return Response.json({ dates: await listReportDates(env) });
+    const reportMatch = url.pathname.match(/^\/api\/reports\/(\d{4}-\d{2}-\d{2})$/);
+    if (request.method === "GET" && reportMatch) {
+      const report = await env.STATE.get(`reports/${reportMatch[1]}.md`);
+      if (!report) return Response.json({ error: "Report not found" }, { status: 404 });
+      return new Response(await report.text(), { headers: { "Content-Type": "text/markdown; charset=utf-8", "Cache-Control": "no-store" } });
+    }
     if (request.method === "POST" && url.pathname === "/run") {
       if (!authorized(request, env.RADAR_RUN_TOKEN)) return Response.json({ error: "unauthorized" }, { status: 401 });
       ctx.waitUntil(runScan(env).catch((error) => { console.error(JSON.stringify({ event: "scan_failed", message: message(error) })); }));
@@ -27,6 +39,11 @@ export default {
     return new Response("Not found", { status: 404 });
   },
 } satisfies ExportedHandler<Env>;
+
+async function listReportDates(env: Env) {
+  const result = await env.STATE.list({ prefix: "reports/", limit: 1000 });
+  return result.objects.map((object) => object.key.match(/^reports\/(\d{4}-\d{2}-\d{2})\.md$/)?.[1]).filter((date): date is string => Boolean(date)).sort((a, b) => b.localeCompare(a));
+}
 
 async function runScan(env: Env) {
   const config = YAML.parse(configText) as { company: string; settings?: { search_provider?: string; search_results_per_query?: number }; competitors: Competitor[] };
@@ -45,8 +62,10 @@ async function runScan(env: Env) {
   const report = formatReport(analyses); const date = new Date().toISOString().slice(0, 10);
   if (analyses.some((analysis) => analysis.signals.length)) {
     await env.STATE.put(`reports/${date}.md`, report, { httpMetadata: { contentType: "text/markdown; charset=utf-8" } });
-    try { await sendSlack(env, analyses, date); console.log(JSON.stringify({ event: "slack_sent" })); }
-    catch (error) { errors.push(`Slack: ${message(error)}`); }
+    if (env.SLACK_WEBHOOK_URL?.trim()) {
+      try { await sendSlack(env, analyses, date); console.log(JSON.stringify({ event: "slack_sent" })); }
+      catch (error) { errors.push(`Slack: ${message(error)}`); }
+    } else console.log(JSON.stringify({ event: "slack_skipped", reason: "SLACK_WEBHOOK_URL is not configured" }));
   }
   for (const error of errors) console.error(JSON.stringify({ event: "scan_error", message: error }));
   console.log(JSON.stringify({ event: "scan_finished", errors: errors.length, report_created: analyses.some((analysis) => analysis.signals.length) }));

@@ -6,6 +6,7 @@
   "compatibility_flags": ["nodejs_compat"],
   "base_dir": ".",
   "rules": [{ "type": "Text", "globs": ["**/*.yaml"], "fallthrough": true }],
+  "assets": { "directory": "./public", "run_worker_first": ["/api/*", "/health", "/run"] },
   "ai": { "binding": "AI" },
   "r2_buckets": [{ "binding": "STATE", "bucket_name": "competitor-radar-state" }],
   "triggers": { "crons": ["17 7 * * *"] },

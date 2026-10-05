@@ -110,9 +110,11 @@ async function discoverCompetitor(env: Env, competitor: Competitor, configuredPr
 }
 
 async function searchWeb(env: Env, query: string, limit: number, configuredProvider: string): Promise<SearchResult[]> {
-  const response = await fetch(`https://api.cloudflare.com/client/v4/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/ai/websearch/`, {
-    method: "POST", headers: { Authorization: `Bearer ${env.CLOUDFLARE_API_TOKEN}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ query, provider: env.CLOUDFLARE_SEARCH_PROVIDER || configuredProvider, limit, options: { gateway: { id: env.CLOUDFLARE_AI_GATEWAY_ID || "default" } } }), signal: AbortSignal.timeout(30000),
+  const response = await env.AI.websearch({
+    gatewayId: env.CLOUDFLARE_AI_GATEWAY_ID || "default",
+    query,
+    provider: env.CLOUDFLARE_SEARCH_PROVIDER || configuredProvider,
+    limit,
   });
   if (!response.ok) throw new Error(`Cloudflare Web Search returned HTTP ${response.status}`);
   const body = await response.json() as { items?: SearchResult[] };

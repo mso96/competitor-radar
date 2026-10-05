@@ -72,7 +72,7 @@ The included workflow runs daily and can also be started manually. Add `OPENAI_A
 
 The separate Worker deployment runs in Cloudflare on a daily Cron Trigger. It uses R2 object storage for snapshots, discovery state, and Markdown reports; it has no dashboard or database. It also exposes `/health` and a token-protected `POST /run` endpoint. This deployment is separate from GitHub Actions, so enable only one scheduler unless you intentionally want duplicate scans.
 
-1. Install dependencies with `npm install`, sign in with `npx wrangler login`, then run `cp .dev.vars.example .dev.vars` and fill in the five values. This file is ignored by Git and is also used to deploy encrypted Worker secrets.
+1. Install dependencies with `npm install`, sign in with `npx wrangler login`, then run `cp .dev.vars.example .dev.vars` and fill in the three values. This file is ignored by Git and is also used to deploy encrypted Worker secrets. Cloudflare Web Search uses the Worker's AI binding, so the Worker does not need a Cloudflare API token.
 
 2. Create an R2 bucket and deploy the Worker:
 

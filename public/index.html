@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="tr" class="dark">
+<html lang="en" class="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#09090b" />
-    <meta name="description" content="Competitor Radar — rakip hareketlerini gürültüsüz izle." />
+    <meta name="description" content="Competitor Radar — track competitor moves without the noise." />
     <title>Competitor Radar</title>
     <style>
       :root {
@@ -159,63 +159,63 @@
   </head>
   <body>
     <div class="shell">
-      <aside class="sidebar" aria-label="Ana gezinme">
+      <aside class="sidebar" aria-label="Main navigation">
         <div class="brand">
           <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg></div>
-          <div><div class="brand-name">Competitor Radar</div><div class="brand-sub">Pazar istihbaratı</div></div>
+          <div><div class="brand-name">Competitor Radar</div><div class="brand-sub">Market intelligence</div></div>
         </div>
         <div class="workspace">
-          <div class="workspace-left"><div class="workspace-avatar">CR</div><div><div class="workspace-name">Çalışma alanım</div><div class="workspace-plan">Cloud Edition</div></div></div>
+          <div class="workspace-left"><div class="workspace-avatar">CR</div><div><div class="workspace-name">My workspace</div><div class="workspace-plan">Cloud Edition</div></div></div>
           <span aria-hidden="true" style="color:#71717a">⌄</span>
         </div>
-        <div class="nav-label">Çalışma alanı</div>
+        <div class="nav-label">Workspace</div>
         <nav class="nav">
-          <button class="nav-button active" data-section="overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7" height="8" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="11" width="7" height="10" rx="1.5"/><rect x="3" y="15" width="7" height="6" rx="1.5"/></svg>Genel bakış</button>
-          <button class="nav-button" data-section="competitors"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="8" r="3.5"/><path d="M2.8 20a6.2 6.2 0 0 1 12.4 0m2-8.2a3.5 3.5 0 0 0 0-6.7M17 14a6 6 0 0 1 4.2 5.7"/></svg>Rakipler <span class="nav-count" id="navCompetitorCount">—</span></button>
-          <button class="nav-button" data-section="reports"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8m-8 4h8"/></svg>Raporlar <span class="nav-count" id="navReportCount">—</span></button>
+          <button class="nav-button active" data-section="overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7" height="8" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="11" width="7" height="10" rx="1.5"/><rect x="3" y="15" width="7" height="6" rx="1.5"/></svg>Overview</button>
+          <button class="nav-button" data-section="competitors"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="8" r="3.5"/><path d="M2.8 20a6.2 6.2 0 0 1 12.4 0m2-8.2a3.5 3.5 0 0 0 0-6.7M17 14a6 6 0 0 1 4.2 5.7"/></svg>Competitors <span class="nav-count" id="navCompetitorCount">—</span></button>
+          <button class="nav-button" data-section="reports"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8m-8 4h8"/></svg>Reports <span class="nav-count" id="navReportCount">—</span></button>
         </nav>
-        <div class="sidebar-bottom"><div class="side-status"><span class="dot"></span>Worker çevrimiçi</div><div class="side-version">COMPETITOR-RADAR · V1</div></div>
+        <div class="sidebar-bottom"><div class="side-status"><span class="dot"></span>Worker online</div><div class="side-version">COMPETITOR-RADAR · V1</div></div>
       </aside>
 
       <main class="main" id="overview">
         <header class="topbar">
-          <div class="breadcrumbs">Çalışma alanı <span style="padding:0 7px;color:#52525b">/</span> <strong>Genel bakış</strong></div>
-          <div class="top-actions"><span class="online"><span class="dot"></span>Cloudflare aktif</span><button class="button button-primary" id="runButton"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1"/><circle cx="12" cy="12" r="5"/></svg><span>Taramayı başlat</span></button></div>
+          <div class="breadcrumbs">Workspace <span style="padding:0 7px;color:#52525b">/</span> <strong>Overview</strong></div>
+          <div class="top-actions"><span class="online"><span class="dot"></span>Cloudflare active</span><button class="button button-primary" id="runButton"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1"/><circle cx="12" cy="12" r="5"/></svg><span>Run scan</span></button></div>
         </header>
 
         <div class="content">
           <div class="page-heading">
-            <div><div class="eyebrow">Pazar istihbaratı</div><h1>Genel bakış</h1><p class="subtitle">Rakip hareketlerini gürültüsüz izle.</p></div>
-            <button class="button" id="refreshButton"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9a7 7 0 0 1 11.6-2L20 12M4 12l2.8 5a7 7 0 0 0 11.6-2"/></svg>Yenile</button>
+            <div><div class="eyebrow">Market intelligence</div><h1>Overview</h1><p class="subtitle">Track competitor moves without the noise.</p></div>
+            <button class="button" id="refreshButton"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9a7 7 0 0 1 11.6-2L20 12M4 12l2.8 5a7 7 0 0 0 11.6-2"/></svg>Refresh</button>
           </div>
 
-          <div class="alert" id="slackAlert" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v4m0 4h.01"/></svg><span>Slack bağlantısı henüz eklenmedi. Raporlar arşivlenir; bildirim göndermek için webhook bağlantısı gerekir.</span></div>
+          <div class="alert" id="slackAlert" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v4m0 4h.01"/></svg><span>Slack is not connected. Reports are archived here; add a webhook to send notifications.</span></div>
 
-          <section class="stats" aria-label="Özet">
-            <article class="card stat-card"><div class="stat-top"><span>İzlenen rakip</span><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="8" r="3.5"/><path d="M2.8 20a6.2 6.2 0 0 1 12.4 0m2-8.2a3.5 3.5 0 0 0 0-6.7M17 14a6 6 0 0 1 4.2 5.7"/></svg></span></div><div class="stat-value" id="statCompetitors">—</div><div class="stat-note">Takip listendeki şirketler</div></article>
-            <article class="card stat-card"><div class="stat-top"><span>Son rapor</span><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span></div><div class="stat-value" id="statLatest">—</div><div class="stat-note" id="latestNote">Henüz tarama raporu yok</div></article>
-            <article class="card stat-card"><div class="stat-top"><span>Tarama sıklığı</span><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg></span></div><div class="stat-value">Her gün</div><div class="stat-note">Saat 07:17 UTC</div></article>
-            <article class="card stat-card"><div class="stat-top"><span>Arşivlenen rapor</span><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 4h18v4H3zM5 8v12h14V8m-9 4h4"/></svg></span></div><div class="stat-value" id="statReports">—</div><div class="stat-note">Cloudflare R2 arşivi</div></article>
+          <section class="stats" aria-label="Summary">
+            <article class="card stat-card"><div class="stat-top"><span>Competitors tracked</span><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="8" r="3.5"/><path d="M2.8 20a6.2 6.2 0 0 1 12.4 0m2-8.2a3.5 3.5 0 0 0 0-6.7M17 14a6 6 0 0 1 4.2 5.7"/></svg></span></div><div class="stat-value" id="statCompetitors">—</div><div class="stat-note">Companies on your watchlist</div></article>
+            <article class="card stat-card"><div class="stat-top"><span>Latest report</span><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span></div><div class="stat-value" id="statLatest">—</div><div class="stat-note" id="latestNote">No scan reports yet</div></article>
+            <article class="card stat-card"><div class="stat-top"><span>Scan schedule</span><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg></span></div><div class="stat-value">Daily</div><div class="stat-note">At 07:17 UTC</div></article>
+            <article class="card stat-card"><div class="stat-top"><span>Reports archived</span><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 4h18v4H3zM5 8v12h14V8m-9 4h4"/></svg></span></div><div class="stat-value" id="statReports">—</div><div class="stat-note">Cloudflare R2 archive</div></article>
           </section>
 
           <section class="columns">
             <article class="card" id="reports">
-              <div class="card-head"><div><h2 class="card-title">Son istihbarat</h2><p class="card-description">Doğrulanmış değişiklikler ve kısa analiz</p></div><span class="badge" id="reportDateBadge">Günlük tarama</span></div>
-              <div class="report-body" id="reportBody"><div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.5"/><path d="m12 12 6-6"/></svg></div><h3 class="empty-title">Raporlar yükleniyor</h3><p class="empty-copy">Rakip hareketleri burada görünecek.</p></div></div>
+              <div class="card-head"><div><h2 class="card-title">Latest intelligence</h2><p class="card-description">Verified changes and concise analysis</p></div><span class="badge" id="reportDateBadge">Daily scan</span></div>
+              <div class="report-body" id="reportBody"><div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.5"/><path d="m12 12 6-6"/></svg></div><h3 class="empty-title">Loading reports</h3><p class="empty-copy">Competitor activity will appear here.</p></div></div>
             </article>
 
             <div class="right-stack">
               <article class="card" id="competitors">
-                <div class="card-head"><div><h2 class="card-title">Takip edilen rakipler</h2><p class="card-description">Yapılandırmandaki şirketler</p></div><span class="badge badge-accent" id="competitorBadge">— şirket</span></div>
-                <div class="competitor-list" id="competitorList"><div class="report-list-empty">Liste yükleniyor…</div></div>
+                <div class="card-head"><div><h2 class="card-title">Tracked competitors</h2><p class="card-description">Companies in your configuration</p></div><span class="badge badge-accent" id="competitorBadge">— companies</span></div>
+                <div class="competitor-list" id="competitorList"><div class="report-list-empty">Loading list…</div></div>
               </article>
               <article class="card">
-                <div class="card-head"><div><h2 class="card-title">Rapor geçmişi</h2><p class="card-description">R2’de saklanan günlük özetler</p></div><span class="badge" id="historyCount">—</span></div>
-                <div class="report-list" id="reportList"><div class="report-list-empty">Henüz rapor yok.</div></div>
+                <div class="card-head"><div><h2 class="card-title">Report history</h2><p class="card-description">Daily digests stored in R2</p></div><span class="badge" id="historyCount">—</span></div>
+                <div class="report-list" id="reportList"><div class="report-list-empty">No reports yet.</div></div>
               </article>
             </div>
           </section>
-          <div class="footer">Competitor Radar · Günlük tarama · Raporlar Cloudflare R2’de saklanır</div>
+          <div class="footer">Competitor Radar · Daily monitoring · Reports stored in Cloudflare R2</div>
         </div>
       </main>
     </div>
@@ -223,9 +223,9 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <div class="modal-backdrop" id="tokenModal" role="presentation">
       <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-        <h2 class="modal-title" id="modalTitle">Taramayı başlat</h2>
-        <p class="modal-copy">Bu Worker’ı elle çalıştırmak için güvenli erişim anahtarını gir. Anahtar yalnızca bu tarayıcıda saklanır.</p>
-        <form id="tokenForm"><label class="field-label" for="runToken">Worker erişim anahtarı</label><input class="input" id="runToken" type="password" autocomplete="current-password" required /><p class="modal-help">Anahtar, proje klasöründeki gizli <code>.dev.vars</code> dosyasında <code>RADAR_RUN_TOKEN</code> adıyla bulunur.</p><div class="modal-actions"><button class="button" type="button" id="cancelToken">Vazgeç</button><button class="button button-primary" type="submit">Kaydet ve tara</button></div></form>
+        <h2 class="modal-title" id="modalTitle">Run scan</h2>
+        <p class="modal-copy">Enter the secure access token to trigger a scan. It will be stored only in this browser.</p>
+        <form id="tokenForm"><label class="field-label" for="runToken">Worker access token</label><input class="input" id="runToken" type="password" autocomplete="current-password" required /><p class="modal-help">Find it in the private <code>.dev.vars</code> file as <code>RADAR_RUN_TOKEN</code>.</p><div class="modal-actions"><button class="button" type="button" id="cancelToken">Cancel</button><button class="button button-primary" type="submit">Save &amp; run</button></div></form>
       </section>
     </div>
 
@@ -235,7 +235,7 @@
       const inlineMarkdown = (value) => escapeHtml(value).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
       let toastTimer;
       function toast(message) { const element = $("#toast"); element.textContent = message; element.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => element.classList.remove("show"), 3600); }
-      function formatDate(date) { return new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(date + "T12:00:00Z")); }
+      function formatDate(date) { return new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(date + "T12:00:00Z")); }
       function renderMarkdown(markdown) {
         const container = document.createElement("div"); container.className = "report-content";
         let hasContent = false;
@@ -250,21 +250,21 @@
         return hasContent ? container : null;
       }
       function renderEmpty(title, copy) {
-        $("#reportBody").innerHTML = `<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.5"/><path d="m12 12 6-6"/></svg></div><h3 class="empty-title">${escapeHtml(title)}</h3><p class="empty-copy">${escapeHtml(copy)}</p><button class="button button-primary" data-run-from-empty>Şimdi tara</button></div>`;
+        $("#reportBody").innerHTML = `<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.5"/><path d="m12 12 6-6"/></svg></div><h3 class="empty-title">${escapeHtml(title)}</h3><p class="empty-copy">${escapeHtml(copy)}</p><button class="button button-primary" data-run-from-empty>Run scan</button></div>`;
         $("[data-run-from-empty]").addEventListener("click", requestRun);
       }
       async function showReport(date) {
         const response = await fetch(`/api/reports/${encodeURIComponent(date)}`);
-        if (!response.ok) throw new Error("Rapor açılamadı.");
+        if (!response.ok) throw new Error("Could not open report.");
         const markdown = await response.text(); const report = renderMarkdown(markdown);
         $("#reportBody").replaceChildren();
-        if (report) $("#reportBody").append(report); else renderEmpty("Bu raporda yeni sinyal yok", "Yeni bir değişiklik bulunduğunda raporda görünecek.");
+        if (report) $("#reportBody").append(report); else renderEmpty("No new signals in this report", "New changes will appear here when detected.");
         $("#reportDateBadge").textContent = formatDate(date);
         document.querySelectorAll(".report-item").forEach((button) => button.classList.toggle("selected", button.dataset.date === date));
       }
       function renderCompetitors(competitors) {
         $("#competitorList").replaceChildren();
-        if (!competitors.length) { $("#competitorList").innerHTML = '<div class="report-list-empty">Henüz rakip eklenmemiş. <code>competitors.yaml</code> dosyasını düzenle.</div>'; return; }
+        if (!competitors.length) { $("#competitorList").innerHTML = '<div class="report-list-empty">No competitors yet. Edit <code>competitors.yaml</code> to add competitors.</div>'; return; }
         for (const competitor of competitors) {
           const row = document.createElement("div"); row.className = "competitor-row";
           const logo = document.createElement("div"); logo.className = "competitor-logo"; logo.textContent = competitor.name.slice(0, 1).toUpperCase();
@@ -272,18 +272,18 @@
           const name = document.createElement("div"); name.className = "competitor-name"; name.textContent = competitor.name;
           const domain = document.createElement("div"); domain.className = "competitor-domain"; domain.textContent = competitor.domain;
           main.append(name, domain);
-          const count = document.createElement("span"); count.className = "page-count"; count.textContent = `${competitor.pages.length} sayfa`;
+          const count = document.createElement("span"); count.className = "page-count"; count.textContent = `${competitor.pages.length} pages`;
           row.append(logo, main, count); $("#competitorList").append(row);
         }
       }
       function renderReports(dates) {
         $("#reportList").replaceChildren();
-        if (!dates.length) { $("#reportList").innerHTML = '<div class="report-list-empty">Henüz arşivlenmiş rapor yok.</div>'; return; }
+        if (!dates.length) { $("#reportList").innerHTML = '<div class="report-list-empty">No archived reports yet.</div>'; return; }
         for (const date of dates.slice(0, 8)) {
           const button = document.createElement("button"); button.className = "report-item"; button.dataset.date = date;
           const label = document.createElement("span"); label.className = "report-item-date"; label.textContent = formatDate(date);
           const arrow = document.createElement("span"); arrow.className = "report-item-arrow"; arrow.textContent = "↗";
-          button.append(label, arrow); button.addEventListener("click", () => showReport(date).catch(() => toast("Rapor yüklenemedi.")));
+          button.append(label, arrow); button.addEventListener("click", () => showReport(date).catch(() => toast("Could not load report.")));
           $("#reportList").append(button);
         }
       }
@@ -291,23 +291,23 @@
         $("#refreshButton").disabled = true;
         try {
           const response = await fetch("/api/overview", { cache: "no-store" });
-          if (!response.ok) throw new Error("Dashboard bilgileri alınamadı.");
+          if (!response.ok) throw new Error("Unable to load dashboard data.");
           const data = await response.json();
           const competitors = Array.isArray(data.competitors) ? data.competitors : [];
           const dates = Array.isArray(data.reportDates) ? data.reportDates : [];
           $("#statCompetitors").textContent = String(competitors.length);
           $("#statReports").textContent = String(dates.length);
           $("#statLatest").textContent = data.latestReportDate ? formatDate(data.latestReportDate) : "—";
-          $("#latestNote").textContent = data.latestReportDate ? "En son kaydedilen rapor" : "Henüz tarama raporu yok";
+          $("#latestNote").textContent = data.latestReportDate ? "Latest saved report" : "No scan reports yet";
           $("#navCompetitorCount").textContent = String(competitors.length);
           $("#navReportCount").textContent = String(dates.length);
-          $("#competitorBadge").textContent = `${competitors.length} şirket`;
-          $("#historyCount").textContent = `${dates.length} kayıt`;
+          $("#competitorBadge").textContent = `${competitors.length} companies`;
+          $("#historyCount").textContent = `${dates.length} reports`;
           $("#slackAlert").hidden = Boolean(data.slackConnected);
           renderCompetitors(competitors); renderReports(dates);
           if (data.latestReportDate) await showReport(data.latestReportDate);
-          else renderEmpty("Henüz rapor yok", "İlk tarama başlangıç verilerini hazırlar. Yeni bir rakip sinyali bulunduğunda rapor burada görünür.");
-        } catch (error) { toast(error.message || "Dashboard yüklenemedi."); renderEmpty("Veri yüklenemedi", "Cloudflare Worker’a bağlanırken bir sorun oldu. Yenile düğmesini deneyebilirsin."); }
+          else renderEmpty("No reports yet", "The first scan establishes the baseline. New competitor signals will appear here when detected.");
+        } catch (error) { toast(error.message || "Dashboard could not load."); renderEmpty("Could not load data", "Could not connect to the Cloudflare Worker. Try refreshing."); }
         finally { $("#refreshButton").disabled = false; }
       }
       function openTokenModal() { $("#runToken").value = localStorage.getItem("radar_run_token") || ""; $("#tokenModal").classList.add("open"); setTimeout(() => $("#runToken").focus(), 50); }
@@ -318,10 +318,10 @@
         const button = $("#runButton"); button.disabled = true;
         try {
           const response = await fetch("/run", { method: "POST", headers: { Authorization: `Bearer ${token}` } });
-          if (response.status === 401) { localStorage.removeItem("radar_run_token"); openTokenModal(); throw new Error("Anahtar geçersiz. Doğru Worker erişim anahtarını gir."); }
-          const result = await response.json(); if (!response.ok) throw new Error(result.error || "Tarama başlatılamadı.");
-          toast("Tarama başlatıldı. Yeni sinyaller bulunursa rapor burada görünecek.");
-        } catch (error) { toast(error.message || "Tarama başlatılamadı."); }
+          if (response.status === 401) { localStorage.removeItem("radar_run_token"); openTokenModal(); throw new Error("Invalid token. Enter the correct Worker access token."); }
+          const result = await response.json(); if (!response.ok) throw new Error(result.error || "Could not start the scan.");
+          toast("Scan started. New signals will appear here when detected.");
+        } catch (error) { toast(error.message || "Could not start the scan."); }
         finally { setTimeout(() => { button.disabled = false; }, 1200); }
       }
       $("#runButton").addEventListener("click", requestRun);

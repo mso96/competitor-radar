@@ -109,6 +109,8 @@
       .competitor-name { font-size: 12px; font-weight: 550; }
       .competitor-domain { overflow: hidden; margin-top: 3px; color: #71717a; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
       .page-count { color: #a1a1aa; font-size: 10px; white-space: nowrap; }
+      .competitor-row .button { min-height: 28px; padding: 0 8px; color: #a1a1aa; font-size: 10px; }
+      .competitor-actions { display: flex; align-items: center; gap: 9px; }
       .report-list { display: grid; gap: 2px; padding: 8px; }
       .report-item { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 12px; border: 0; border-radius: 6px; background: transparent; color: #a1a1aa; cursor: pointer; padding: 9px; text-align: left; }
       .report-item:hover, .report-item.selected { background: #1b1b1e; color: #f4f4f5; }
@@ -120,6 +122,18 @@
       .footer { margin-top: 20px; color: #52525b; font-size: 10px; text-align: center; }
       .toast { position: fixed; right: 22px; bottom: 22px; z-index: 10; max-width: min(380px, calc(100vw - 32px)); border: 1px solid #3f3f46; border-radius: 8px; background: #18181b; box-shadow: 0 12px 40px #0008; color: #e4e4e7; padding: 12px 15px; font-size: 12px; opacity: 0; pointer-events: none; transform: translateY(8px); transition: .2s; }
       .toast.show { opacity: 1; transform: translateY(0); }
+      .dialog-backdrop { position: fixed; inset: 0; z-index: 20; display: none; place-items: center; overflow-y: auto; background: #0009; padding: 18px; }
+      .dialog-backdrop.open { display: grid; }
+      .dialog { width: min(100%, 470px); border: 1px solid var(--border); border-radius: 12px; background: #111113; box-shadow: 0 24px 90px #0008; padding: 20px; }
+      .dialog-title { margin: 0; font-size: 17px; font-weight: 600; }
+      .dialog-copy { margin: 7px 0 18px; color: var(--muted-foreground); font-size: 12px; line-height: 1.6; }
+      .form-grid { display: grid; gap: 13px; }
+      .form-field { display: grid; gap: 6px; color: #d4d4d8; font-size: 11px; font-weight: 550; }
+      .form-field input { width: 100%; height: 38px; border: 1px solid var(--input); border-radius: 7px; outline: none; background: #09090b; color: #f4f4f5; padding: 0 11px; font-size: 12px; }
+      .form-field input:focus { border-color: #a1a1aa; box-shadow: 0 0 0 2px #a1a1aa26; }
+      .form-field input::placeholder { color: #52525b; }
+      .dialog-help { margin: 0; color: #71717a; font-size: 10px; line-height: 1.5; }
+      .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 17px; }
       .mobile-menu { display: none; }
       @media (max-width: 1050px) { .stats { grid-template-columns: repeat(2, minmax(0,1fr)); } .columns { grid-template-columns: minmax(0,1fr); } .right-stack { grid-template-columns: repeat(2,minmax(0,1fr)); } }
       @media (max-width: 720px) {
@@ -196,7 +210,7 @@
 
             <div class="right-stack">
               <article class="card" id="competitors">
-                <div class="card-head"><div><h2 class="card-title">Tracked competitors</h2><p class="card-description">Companies in your configuration</p></div><span class="badge badge-accent" id="competitorBadge">— companies</span></div>
+                <div class="card-head"><div><h2 class="card-title">Tracked competitors</h2><p class="card-description">Companies on your watchlist</p></div><div class="competitor-actions"><span class="badge badge-accent" id="competitorBadge">— companies</span><button class="button" id="addCompetitorButton" type="button">+ Add</button></div></div>
                 <div class="competitor-list" id="competitorList"><div class="report-list-empty">Loading list…</div></div>
               </article>
               <article class="card">
@@ -211,11 +225,37 @@
     </div>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div class="dialog-backdrop" id="competitorDialog" role="presentation">
+      <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="competitorDialogTitle">
+        <h2 class="dialog-title" id="competitorDialogTitle">Add a competitor</h2>
+        <p class="dialog-copy">Add a public website to your watchlist. The daily scan will check its homepage and any URLs you provide.</p>
+        <form id="competitorForm" class="form-grid">
+          <label class="form-field">Company name<input name="name" required minlength="2" maxlength="80" placeholder="e.g. Acme" /></label>
+          <label class="form-field">Homepage URL<input name="homepage" type="url" required placeholder="https://example.com" /></label>
+          <label class="form-field">Pricing page <span class="dialog-help">Optional</span><input name="pricing" type="url" placeholder="https://example.com/pricing" /></label>
+          <label class="form-field">Changelog page <span class="dialog-help">Optional</span><input name="changelog" type="url" placeholder="https://example.com/changelog" /></label>
+          <p class="dialog-help">HTTPS URLs only. Changes are saved to the cloud watchlist and apply to the next daily scan.</p>
+          <div class="dialog-actions"><button class="button" type="button" data-close-dialog="competitorDialog">Cancel</button><button class="button button-primary" type="submit" id="saveCompetitorButton">Add competitor</button></div>
+        </form>
+      </section>
+    </div>
+    <div class="dialog-backdrop" id="accessDialog" role="presentation">
+      <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="accessDialogTitle">
+        <h2 class="dialog-title" id="accessDialogTitle">Confirm workspace access</h2>
+        <p class="dialog-copy">Enter the workspace access key to make this change. It will be kept only for this browser tab.</p>
+        <form id="accessForm">
+          <label class="form-field">Workspace access key<input id="accessToken" type="password" autocomplete="current-password" required /></label>
+          <p class="dialog-help" style="margin-top:8px">Use the workspace <code>RADAR_RUN_TOKEN</code>. Only owners can retrieve this key.</p>
+          <div class="dialog-actions"><button class="button" type="button" data-close-dialog="accessDialog">Cancel</button><button class="button button-primary" type="submit">Continue</button></div>
+        </form>
+      </section>
+    </div>
     <script>
       const $ = (selector) => document.querySelector(selector);
       const escapeHtml = (value) => value.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
       const inlineMarkdown = (value) => escapeHtml(value).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
       let toastTimer;
+      let pendingAccessResolve;
       function toast(message) { const element = $("#toast"); element.textContent = message; element.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => element.classList.remove("show"), 3600); }
       function formatDate(date) { return new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(date + "T12:00:00Z")); }
       function renderMarkdown(markdown) {
@@ -245,7 +285,7 @@
       }
       function renderCompetitors(competitors) {
         $("#competitorList").replaceChildren();
-        if (!competitors.length) { $("#competitorList").innerHTML = '<div class="report-list-empty">No competitors yet. Edit <code>competitors.yaml</code> to add competitors.</div>'; return; }
+        if (!competitors.length) { $("#competitorList").innerHTML = '<div class="report-list-empty">No competitors yet. Use “Add” to build your watchlist.</div>'; return; }
         for (const competitor of competitors) {
           const row = document.createElement("div"); row.className = "competitor-row";
           const logo = document.createElement("div"); logo.className = "competitor-logo"; logo.textContent = competitor.name.slice(0, 1).toUpperCase();
@@ -253,8 +293,10 @@
           const name = document.createElement("div"); name.className = "competitor-name"; name.textContent = competitor.name;
           const domain = document.createElement("div"); domain.className = "competitor-domain"; domain.textContent = competitor.domain;
           main.append(name, domain);
+          const actions = document.createElement("div"); actions.className = "competitor-actions";
           const count = document.createElement("span"); count.className = "page-count"; count.textContent = `${competitor.pages.length} pages`;
-          row.append(logo, main, count); $("#competitorList").append(row);
+          const remove = document.createElement("button"); remove.className = "button"; remove.type = "button"; remove.textContent = "Remove"; remove.setAttribute("aria-label", `Remove ${competitor.name}`); remove.addEventListener("click", () => removeCompetitor(competitor));
+          actions.append(count, remove); row.append(logo, main, actions); $("#competitorList").append(row);
         }
       }
       function renderReports(dates) {
@@ -291,6 +333,41 @@
         } catch (error) { toast(error.message || "Dashboard could not load."); renderEmpty("Could not load data", "Could not connect to the Cloudflare Worker. Try refreshing."); }
         finally { $("#refreshButton").disabled = false; }
       }
+      function openDialog(id) { $(`#${id}`).classList.add("open"); }
+      function closeDialog(id) { $(`#${id}`).classList.remove("open"); }
+      function requireAccess() {
+        const stored = sessionStorage.getItem("radar_admin_token"); if (stored) return Promise.resolve(stored);
+        openDialog("accessDialog"); $("#accessToken").focus();
+        return new Promise((resolve) => { pendingAccessResolve = resolve; });
+      }
+      async function authorizedMutation(url, options) {
+        let token = sessionStorage.getItem("radar_admin_token") || await requireAccess();
+        if (!token) return null;
+        let response = await fetch(url, { ...options, headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, ...(options.headers || {}) } });
+        if (response.status === 401) {
+          sessionStorage.removeItem("radar_admin_token"); token = await requireAccess(); if (!token) return null;
+          response = await fetch(url, { ...options, headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, ...(options.headers || {}) } });
+        }
+        if (!response.ok) { const result = await response.json().catch(() => ({})); throw new Error(result.error || "Could not save this change."); }
+        return response;
+      }
+      async function removeCompetitor(competitor) {
+        if (!window.confirm(`Remove ${competitor.name} from the watchlist?`)) return;
+        try { const response = await authorizedMutation(`/api/competitors/${encodeURIComponent(competitor.id)}`, { method: "DELETE" }); if (!response) return; toast(`${competitor.name} removed from the watchlist.`); await loadDashboard(); }
+        catch (error) { toast(error.message || "Could not remove competitor."); }
+      }
+      $("#addCompetitorButton").addEventListener("click", () => { $("#competitorForm").reset(); openDialog("competitorDialog"); $("#competitorForm [name=name]").focus(); });
+      $("#competitorForm").addEventListener("submit", async (event) => {
+        event.preventDefault(); const form = new FormData(event.currentTarget); const button = $("#saveCompetitorButton"); button.disabled = true;
+        try {
+          const response = await authorizedMutation("/api/competitors", { method: "POST", body: JSON.stringify({ name: form.get("name"), homepage: form.get("homepage"), pricing: form.get("pricing"), changelog: form.get("changelog") }) }); if (!response) return;
+          closeDialog("competitorDialog"); toast("Competitor added. It will be included in the next daily scan."); await loadDashboard();
+        } catch (error) { toast(error.message || "Could not add competitor."); }
+        finally { button.disabled = false; }
+      });
+      $("#accessForm").addEventListener("submit", (event) => { event.preventDefault(); const token = $("#accessToken").value.trim(); if (!token) return; sessionStorage.setItem("radar_admin_token", token); $("#accessToken").value = ""; closeDialog("accessDialog"); pendingAccessResolve?.(token); pendingAccessResolve = null; });
+      document.querySelectorAll("[data-close-dialog]").forEach((button) => button.addEventListener("click", () => { const id = button.dataset.closeDialog; closeDialog(id); if (id === "accessDialog") { pendingAccessResolve?.(null); pendingAccessResolve = null; } }));
+      document.querySelectorAll(".dialog-backdrop").forEach((dialog) => dialog.addEventListener("click", (event) => { if (event.target === dialog) { closeDialog(dialog.id); if (dialog.id === "accessDialog") { pendingAccessResolve?.(null); pendingAccessResolve = null; } } }));
       $("#refreshButton").addEventListener("click", loadDashboard);
       document.querySelectorAll("[data-section]").forEach((button) => button.addEventListener("click", () => {
         document.querySelectorAll("[data-section]").forEach((item) => item.classList.toggle("active", item === button));

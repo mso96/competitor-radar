@@ -70,7 +70,7 @@ The included workflow runs daily and can also be started manually. Add `OPENAI_A
 
 ## Cloudflare hosted version
 
-The separate Worker deployment runs in Cloudflare on a daily Cron Trigger. It uses R2 object storage for snapshots, discovery state, and Markdown reports; it has no dashboard or database. It also exposes `/health` and a token-protected `POST /run` endpoint. This deployment is separate from GitHub Actions, so enable only one scheduler unless you intentionally want duplicate scans.
+The Worker deployment includes a small English dashboard, a daily Cron Trigger, and R2 object storage for the watchlist, snapshots, discovery state, and Markdown reports. It exposes `/health`, read-only dashboard APIs, a token-protected `POST /run` endpoint, and token-protected competitor add/remove actions. This deployment is separate from GitHub Actions, so enable only one scheduler unless you intentionally want duplicate scans.
 
 1. Install dependencies with `npm install`, sign in with `npx wrangler login`, then run `cp .dev.vars.example .dev.vars` and fill in the three values. This file is ignored by Git and is also used to deploy encrypted Worker secrets. Cloudflare Web Search uses the Worker's AI binding, so the Worker does not need a Cloudflare API token.
 
@@ -82,7 +82,7 @@ The separate Worker deployment runs in Cloudflare on a daily Cron Trigger. It us
    npm run cloud:deploy
    ```
 
-3. Edit the root `competitors.yaml` and deploy again when your competitor list changes. The Worker imports this file at build time.
+3. Open your deployed Worker URL to view the dashboard. Use **Add** in the Tracked competitors panel to add a company; the homepage is required and pricing/changelog URLs are optional. Changes save to the R2 watchlist and are used by subsequent scheduled scans. The first add/remove action asks for `RADAR_RUN_TOKEN`; it is kept in that browser tab only. Read access to the dashboard does not need a token. The initial list comes from `competitors.yaml` until a cloud watchlist is saved. Local CLI scans continue to use `competitors.yaml`.
 
 4. Check deployment and run it manually:
 

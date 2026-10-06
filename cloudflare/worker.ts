@@ -20,9 +20,32 @@ export default {
     const url = new URL(request.url);
     if (request.method === "GET" && url.pathname === "/health") return Response.json({ status: "ok", service: "competitor-radar" });
     if (request.method === "GET" && url.pathname === "/api/overview") {
-      const config = YAML.parse(configText) as { company: string; competitors: Competitor[] };
+      const config = await loadConfig(env);
       const reports = await listReportDates(env);
-      return Response.json({ company: config.company, competitors: config.competitors.map((competitor) => ({ name: competitor.name, domain: competitor.domain, pages: Object.keys(competitor.pages || {}) })), latestReportDate: reports[0] || null, reportDates: reports, slackConnected: Boolean(env.SLACK_WEBHOOK_URL?.trim()), schedule: "07:17 UTC" });
+      return Response.json({ company: config.company, competitors: config.competitors.map((competitor) => ({ id: slug(competitor.domain), name: competitor.name, domain: competitor.domain, pages: Object.keys(competitor.pages || {}) })), latestReportDate: reports[0] || null, reportDates: reports, slackConnected: Boolean(env.SLACK_WEBHOOK_URL?.trim()), schedule: "07:17 UTC" });
+    }
+    if (request.method === "POST" && url.pathname === "/api/competitors") {
+      if (!authorized(request, env.RADAR_RUN_TOKEN)) return Response.json({ error: "unauthorized" }, { status: 401 });
+      let input: unknown;
+      try { input = await request.json(); } catch { return Response.json({ error: "Request body must be valid JSON." }, { status: 400 }); }
+      const competitor = validateCompetitor(input);
+      if ("error" in competitor) return Response.json({ error: competitor.error }, { status: 400 });
+      const config = await loadConfig(env);
+      if (config.competitors.length >= 40) return Response.json({ error: "The watchlist is full (40 competitors maximum)." }, { status: 409 });
+      if (config.competitors.some((item) => slug(item.name) === slug(competitor.name) || item.domain.toLowerCase() === competitor.domain.toLowerCase())) return Response.json({ error: "That competitor is already on the watchlist." }, { status: 409 });
+      config.competitors.push(competitor);
+      await saveConfig(env, config);
+      return Response.json({ competitor: { name: competitor.name, domain: competitor.domain, pages: Object.keys(competitor.pages) } }, { status: 201 });
+    }
+    const competitorMatch = url.pathname.match(/^\/api\/competitors\/([a-z0-9-]+)$/);
+    if (request.method === "DELETE" && competitorMatch) {
+      if (!authorized(request, env.RADAR_RUN_TOKEN)) return Response.json({ error: "unauthorized" }, { status: 401 });
+      const config = await loadConfig(env);
+      const originalCount = config.competitors.length;
+      config.competitors = config.competitors.filter((item) => slug(item.domain) !== competitorMatch[1]);
+      if (config.competitors.length === originalCount) return Response.json({ error: "Competitor not found." }, { status: 404 });
+      await saveConfig(env, config);
+      return Response.json({ status: "deleted" });
     }
     if (request.method === "GET" && url.pathname === "/api/reports") return Response.json({ dates: await listReportDates(env) });
     const reportMatch = url.pathname.match(/^\/api\/reports\/(\d{4}-\d{2}-\d{2})$/);
@@ -45,8 +68,47 @@ async function listReportDates(env: Env) {
   return result.objects.map((object) => object.key.match(/^reports\/(\d{4}-\d{2}-\d{2})\.md$/)?.[1]).filter((date): date is string => Boolean(date)).sort((a, b) => b.localeCompare(a));
 }
 
+type RadarConfig = { company: string; settings?: { search_provider?: string; search_results_per_query?: number }; competitors: Competitor[] };
+const competitorsConfigKey = "config/competitors.json";
+async function loadConfig(env: Env): Promise<RadarConfig> {
+  const config = YAML.parse(configText) as RadarConfig;
+  const stored = await env.STATE.get(competitorsConfigKey);
+  if (!stored) return config;
+  try {
+    const parsed = JSON.parse(await stored.text()) as { competitors?: unknown };
+    if (Array.isArray(parsed.competitors)) config.competitors = parsed.competitors as Competitor[];
+    else console.error(JSON.stringify({ event: "competitors_config_invalid", reason: "competitors is not an array" }));
+  } catch (error) { console.error(JSON.stringify({ event: "competitors_config_invalid", message: message(error) })); }
+  return config;
+}
+async function saveConfig(env: Env, config: RadarConfig) {
+  await env.STATE.put(competitorsConfigKey, JSON.stringify({ competitors: config.competitors }, null, 2), { httpMetadata: { contentType: "application/json; charset=utf-8" } });
+}
+function validateCompetitor(input: unknown): Competitor | { error: string } {
+  if (!input || typeof input !== "object") return { error: "Provide a competitor name and website." };
+  const value = input as Record<string, unknown>;
+  const name = typeof value.name === "string" ? value.name.trim() : "";
+  const homepage = safeHttpsUrl(value.homepage);
+  if (name.length < 2 || name.length > 80) return { error: "Name must be between 2 and 80 characters." };
+  if (!homepage) return { error: "Enter a valid HTTPS homepage URL." };
+  const domain = homepage.hostname.replace(/^www\./i, "").toLowerCase();
+  const pages: Competitor["pages"] = { homepage: homepage.toString() };
+  for (const type of ["pricing", "changelog"] as const) {
+    const raw = value[type];
+    if (typeof raw !== "string" || !raw.trim()) continue;
+    const url = safeHttpsUrl(raw);
+    if (!url) return { error: `${type === "pricing" ? "Pricing" : "Changelog"} URL must use HTTPS.` };
+    pages[type] = url.toString();
+  }
+  return { name, domain, pages };
+}
+function safeHttpsUrl(value: unknown): URL | null {
+  if (typeof value !== "string" || value.length > 500) return null;
+  try { const url = new URL(value.trim()); return url.protocol === "https:" && url.hostname && !url.username && !url.password ? url : null; } catch { return null; }
+}
+
 async function runScan(env: Env) {
-  const config = YAML.parse(configText) as { company: string; settings?: { search_provider?: string; search_results_per_query?: number }; competitors: Competitor[] };
+  const config = await loadConfig(env);
   const errors: string[] = []; const analyses: Analysis[] = [];
   console.log(JSON.stringify({ event: "scan_started", competitors: config.competitors.length, date: new Date().toISOString().slice(0, 10) }));
   for (const competitor of config.competitors) {

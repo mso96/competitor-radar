@@ -193,18 +193,16 @@
             <button class="button" id="refreshButton"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9a7 7 0 0 1 11.6-2L20 12M4 12l2.8 5a7 7 0 0 0 11.6-2"/></svg>Refresh</button>
           </div>
 
-          <div class="alert" id="slackAlert" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v4m0 4h.01"/></svg><span>Slack is not connected. Reports are archived here; add a webhook to send notifications.</span></div>
-
           <section class="stats" aria-label="Summary">
             <article class="card stat-card"><div class="stat-top"><span>Competitors tracked</span><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="8" r="3.5"/><path d="M2.8 20a6.2 6.2 0 0 1 12.4 0m2-8.2a3.5 3.5 0 0 0 0-6.7M17 14a6 6 0 0 1 4.2 5.7"/></svg></span></div><div class="stat-value" id="statCompetitors">—</div><div class="stat-note">Companies on your watchlist</div></article>
             <article class="card stat-card"><div class="stat-top"><span>Latest report</span><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span></div><div class="stat-value" id="statLatest">—</div><div class="stat-note" id="latestNote">No scan reports yet</div></article>
             <article class="card stat-card"><div class="stat-top"><span>Scan schedule</span><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg></span></div><div class="stat-value">Daily</div><div class="stat-note">At 07:17 UTC</div></article>
-            <article class="card stat-card"><div class="stat-top"><span>Reports archived</span><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 4h18v4H3zM5 8v12h14V8m-9 4h4"/></svg></span></div><div class="stat-value" id="statReports">—</div><div class="stat-note">Cloudflare R2 archive</div></article>
+            <article class="card stat-card"><div class="stat-top"><span>Daily reports</span><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 4h18v4H3zM5 8v12h14V8m-9 4h4"/></svg></span></div><div class="stat-value" id="statReports">—</div><div class="stat-note">Saved here after every scan</div></article>
           </section>
 
           <section class="columns">
             <article class="card" id="reports">
-              <div class="card-head"><div><h2 class="card-title">Latest intelligence</h2><p class="card-description">Verified changes and concise analysis</p></div><span class="badge" id="reportDateBadge">Daily scan</span></div>
+              <div class="card-head"><div><h2 class="card-title">Latest daily report</h2><p class="card-description">Competitor changes and concise analysis</p></div><span class="badge" id="reportDateBadge">Daily scan</span></div>
               <div class="report-body" id="reportBody"><div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.5"/><path d="m12 12 6-6"/></svg></div><h3 class="empty-title">Loading reports</h3><p class="empty-copy">Competitor activity will appear here.</p></div></div>
             </article>
 
@@ -326,7 +324,6 @@
           $("#navReportCount").textContent = String(dates.length);
           $("#competitorBadge").textContent = `${competitors.length} companies`;
           $("#historyCount").textContent = `${dates.length} reports`;
-          $("#slackAlert").hidden = Boolean(data.slackConnected);
           renderCompetitors(competitors); renderReports(dates);
           if (data.latestReportDate) await showReport(data.latestReportDate);
           else renderEmpty("No reports yet", "The first scan establishes the baseline. New competitor signals will appear here when detected.");

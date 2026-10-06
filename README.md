@@ -10,14 +10,15 @@ Competitor Radar is a small TypeScript and Node.js tool for founders and markete
 - Tracks cleaned page content instead of raw HTML.
 - Searches the web for new products, features, pricing, integrations, partnerships, and company activity.
 - Uses one `competitor-analysis-agent` to analyse all evidence for each competitor.
-- Sends one daily digest to Slack and saves the same digest as Markdown.
+- Publishes a daily Markdown report in the hosted dashboard, including quiet-scan updates.
+- Can optionally send signals to Slack when a webhook is configured.
 - Separates verified facts from analysis and does not score or rank competitors.
 
 ## Architecture
 
 ```text
 Known competitor pages ─┐
-                        ├─> Evidence ─> Competitor Analysis Agent ─> Slack + Markdown
+                        ├─> Evidence ─> Competitor Analysis Agent ─> Dashboard + Markdown
 Cloudflare Web Search ──┘
 ```
 
@@ -60,19 +61,19 @@ Create an API key in the OpenAI platform and set `OPENAI_API_KEY`. The model def
 
 Set `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, and optionally `CLOUDFLARE_AI_GATEWAY_ID` (defaults to `default`). `CLOUDFLARE_SEARCH_PROVIDER` defaults to `ceramic`; the YAML `settings.search_provider` also documents the preferred provider. Cloudflare currently supports Ceramic, Exa, and Linkup. Search runs about seven queries per competitor with up to five results each. See [Cloudflare Web Search setup](https://developers.cloudflare.com/web-search/how-to-use/).
 
-### Slack
+### Slack (optional)
 
-Create a Slack Incoming Webhook and set `SLACK_WEBHOOK_URL`. One digest is posted per scan when signals exist. No message is sent when there are no signals. If Slack delivery fails, the Markdown report has already been written.
+The dashboard and daily report history work without Slack. If you want Slack notifications later, set `SLACK_WEBHOOK_URL`; one digest is posted when a scan finds signals.
 
 ### GitHub Actions
 
-The included workflow runs daily and can also be started manually. Add `OPENAI_API_KEY`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, and `SLACK_WEBHOOK_URL` as repository secrets. The optional model and Cloudflare gateway/provider can be set as repository variables. The workflow commits snapshots, discovery state, and reports; its repository token needs permission to write contents.
+The GitHub Actions workflow can be started manually to run a repository-local scan. Add `OPENAI_API_KEY`, `CLOUDFLARE_ACCOUNT_ID`, and `CLOUDFLARE_API_TOKEN` as repository secrets. `SLACK_WEBHOOK_URL` is optional. The optional model and Cloudflare gateway/provider can be set as repository variables. The workflow commits snapshots, discovery state, and reports; its repository token needs permission to write contents.
 
 ## Cloudflare hosted version
 
-The Worker deployment includes a small English dashboard, a daily Cron Trigger, and R2 object storage for the watchlist, snapshots, discovery state, and Markdown reports. It exposes `/health`, read-only dashboard APIs, a token-protected `POST /run` endpoint, and token-protected competitor add/remove actions. This deployment is separate from GitHub Actions, so enable only one scheduler unless you intentionally want duplicate scans.
+The Worker deployment includes a small English dashboard, a daily Cron Trigger, and R2 object storage for the watchlist, snapshots, discovery state, and Markdown reports. Every scheduled scan creates a dated report visible in the dashboard, even when it finds no new signals. It exposes `/health`, read-only dashboard APIs, a token-protected `POST /run` endpoint, and token-protected competitor add/remove actions. Cloudflare is the daily scheduler; GitHub Actions stays manual so it does not create a second scheduled scan.
 
-1. Install dependencies with `npm install`, sign in with `npx wrangler login`, then run `cp .dev.vars.example .dev.vars` and fill in the three values. This file is ignored by Git and is also used to deploy encrypted Worker secrets. Cloudflare Web Search uses the Worker's AI binding, so the Worker does not need a Cloudflare API token.
+1. Install dependencies with `npm install`, sign in with `npx wrangler login`, then run `cp .dev.vars.example .dev.vars` and fill in `OPENAI_API_KEY` and a private `RADAR_RUN_TOKEN`. This file is ignored by Git and is also used to deploy encrypted Worker secrets. Cloudflare Web Search uses the Worker's AI binding, so the Worker does not need a Cloudflare API token. Slack configuration is optional.
 
 2. Create an R2 bucket and deploy the Worker:
 
@@ -92,7 +93,7 @@ The Worker deployment includes a small English dashboard, a daily Cron Trigger, 
    curl -X POST https://YOUR-WORKER.workers.dev/run -H 'Authorization: Bearer YOUR-RADAR-RUN-TOKEN'
    ```
 
-The Cron Trigger runs daily at 07:17 UTC. Local Worker development uses `.dev.vars` (copy `.dev.vars.example`); do not commit that file. The Worker stores output objects privately in its bound R2 bucket. It extracts pages from normal HTTP responses but does not use Playwright, so JavaScript-only sites may yield less content in this deployment. Cloudflare free-tier Cron CPU limits may be too low for HTML extraction; the Wrangler config requests a 30-second CPU budget and elevated subrequest limit, which requires an eligible Workers plan. See [Cron Triggers](https://developers.cloudflare.com/workers/configuration/cron-triggers/), [R2 Worker bindings](https://developers.cloudflare.com/r2/api/workers/workers-api-reference/), and [Worker secrets](https://developers.cloudflare.com/workers/configuration/secrets/).
+The Cron Trigger runs daily at 07:17 UTC. Local Worker development uses `.dev.vars` (copy `.dev.vars.example`); do not commit that file. The Worker stores output objects privately in its bound R2 bucket and serves reports through the dashboard. It extracts pages from normal HTTP responses but does not use Playwright, so JavaScript-only sites may yield less content in this deployment. Cloudflare free-tier Cron CPU limits may be too low for HTML extraction; the Wrangler config requests a 30-second CPU budget and elevated subrequest limit, which requires an eligible Workers plan. See [Cron Triggers](https://developers.cloudflare.com/workers/configuration/cron-triggers/), [R2 Worker bindings](https://developers.cloudflare.com/r2/api/workers/workers-api-reference/), and [Worker secrets](https://developers.cloudflare.com/workers/configuration/secrets/).
 
 ## Commands
 
@@ -110,7 +111,7 @@ npm test          # fixture and mocked-service tests
 
 - `snapshots/{competitor}/{page}.md` — readable content snapshots.
 - `data/discovery/{competitor}.json` — canonical discovered URLs and first-seen dates.
-- `reports/YYYY-MM-DD.md` — daily intelligence digest when at least one signal exists.
+- `reports/YYYY-MM-DD.md` — daily local digest when signals exist; every Cloudflare scan creates a dated dashboard report.
 
 There is no database. Git history stores the state over time.
 

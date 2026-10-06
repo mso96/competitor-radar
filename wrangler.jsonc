@@ -11,7 +11,7 @@
   "r2_buckets": [{ "binding": "STATE", "bucket_name": "competitor-radar-state" }],
   "triggers": { "crons": ["17 7 * * *"] },
   "limits": { "cpu_ms": 30000, "subrequests": 500 },
-  "secrets": { "required": ["OPENAI_API_KEY", "SLACK_WEBHOOK_URL", "RADAR_RUN_TOKEN"] },
+  "secrets": { "required": ["OPENAI_API_KEY", "RADAR_RUN_TOKEN"] },
   "vars": {
     "OPENAI_MODEL": "gpt-4.1-mini",
     "CLOUDFLARE_AI_GATEWAY_ID": "default",

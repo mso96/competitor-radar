@@ -22,7 +22,7 @@ export default {
     if (request.method === "GET" && url.pathname === "/api/overview") {
       const config = await loadConfig(env);
       const reports = await listReportDates(env);
-      return Response.json({ company: config.company, competitors: config.competitors.map((competitor) => ({ id: slug(competitor.domain), name: competitor.name, domain: competitor.domain, pages: Object.keys(competitor.pages || {}) })), latestReportDate: reports[0] || null, reportDates: reports, slackConnected: Boolean(env.SLACK_WEBHOOK_URL?.trim()), schedule: "07:17 UTC" });
+      return Response.json({ company: config.company, competitors: config.competitors.map((competitor) => ({ id: slug(competitor.domain), name: competitor.name, domain: competitor.domain, pages: Object.keys(competitor.pages || {}) })), latestReportDate: reports[0] || null, reportDates: reports, schedule: "07:17 UTC" });
     }
     if (request.method === "POST" && url.pathname === "/api/competitors") {
       if (!authorized(request, env.RADAR_RUN_TOKEN)) return Response.json({ error: "unauthorized" }, { status: 401 });
@@ -121,16 +121,14 @@ async function runScan(env: Env) {
       console.log(JSON.stringify({ event: "competitor_complete", competitor: competitor.name, signals: analysis.signals.length, pages_checked: monitor.checked, discoveries: discovery.evidence.length }));
     } catch (error) { errors.push(`${competitor.name} analysis: ${message(error)}`); }
   }
-  const report = formatReport(analyses); const date = new Date().toISOString().slice(0, 10);
-  if (analyses.some((analysis) => analysis.signals.length)) {
-    await env.STATE.put(`reports/${date}.md`, report, { httpMetadata: { contentType: "text/markdown; charset=utf-8" } });
-    if (env.SLACK_WEBHOOK_URL?.trim()) {
-      try { await sendSlack(env, analyses, date); console.log(JSON.stringify({ event: "slack_sent" })); }
-      catch (error) { errors.push(`Slack: ${message(error)}`); }
-    } else console.log(JSON.stringify({ event: "slack_skipped", reason: "SLACK_WEBHOOK_URL is not configured" }));
+  const report = formatReport(analyses, errors); const date = new Date().toISOString().slice(0, 10);
+  await env.STATE.put(`reports/${date}.md`, report, { httpMetadata: { contentType: "text/markdown; charset=utf-8" } });
+  if (analyses.some((analysis) => analysis.signals.length) && slackWebhook(env)) {
+    try { await sendSlack(env, analyses, date); console.log(JSON.stringify({ event: "slack_sent" })); }
+    catch (error) { errors.push(`Slack: ${message(error)}`); }
   }
   for (const error of errors) console.error(JSON.stringify({ event: "scan_error", message: error }));
-  console.log(JSON.stringify({ event: "scan_finished", errors: errors.length, report_created: analyses.some((analysis) => analysis.signals.length) }));
+  console.log(JSON.stringify({ event: "scan_finished", errors: errors.length, report_saved: true, signals_found: analyses.reduce((count, analysis) => count + analysis.signals.length, 0) }));
 }
 
 async function monitorCompetitor(env: Env, competitor: Competitor) {
@@ -260,14 +258,17 @@ function mergeSignals(signals: Signal[]) {
   for (const signal of signals) { const key = signal.headline.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim(); const prior = merged.get(key); if (!prior) merged.set(key, signal); else { prior.source_urls = [...new Set([...prior.source_urls, ...signal.source_urls])]; prior.verified += ` ${signal.verified}`; } }
   return [...merged.values()];
 }
-function formatReport(analyses: Analysis[]) {
+function formatReport(analyses: Analysis[], errors: string[] = []) {
   const active = analyses.filter((item) => item.signals.length); const date = new Date().toISOString().slice(0, 10);
-  const lines = [`# Competitor Radar — ${date}`, "", `${active.length} ${active.length === 1 ? "competitor had" : "competitors had"} updates today.`, ""];
+  const lines = [`# Competitor Radar — ${date}`, "", active.length ? `${active.length} ${active.length === 1 ? "competitor had" : "competitors had"} updates today.` : "No verified competitor activity was found on this scan.", ""];
+  if (!active.length && analyses.length === 0 && !errors.length) lines.push("No competitors are configured yet.", "");
+  if (errors.length) lines.push(`Some sources could not be checked (${errors.length} issue${errors.length === 1 ? "" : "s"}). See Worker logs for details.`, "");
   for (const item of active) { lines.push(`## ${item.competitor.toUpperCase()}`, "", item.summary, ""); for (const signal of item.signals) lines.push(`### ${signal.headline}`, "", `**Category:** ${signal.category}`, "", `**Verified**  \n${signal.verified}`, "", `**Analysis**  \n${signal.analysis}`, "", `**Sources:** ${signal.source_urls.map((url) => `[${url}](${url})`).join(" · ")}`, ""); }
   return `${lines.join("\n").trim()}\n`;
 }
 async function sendSlack(env: Env, analyses: Analysis[], date: string) {
   const active = analyses.filter((item) => item.signals.length); if (!active.length) return;
+  const webhook = slackWebhook(env); if (!webhook) return;
   const header: Record<string, unknown> = { type: "section", text: { type: "mrkdwn", text: `*Competitor Radar*\n${date}` } };
   const chunks: Record<string, unknown>[][] = []; let blocks: Record<string, unknown>[] = [header];
   for (const item of active) {
@@ -280,8 +281,9 @@ async function sendSlack(env: Env, analyses: Analysis[], date: string) {
     }
   }
   if (blocks.length > 1) chunks.push(blocks);
-  for (const chunk of chunks) { const response = await fetch(env.SLACK_WEBHOOK_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: `Competitor Radar — ${date}`, blocks: chunk }), signal: AbortSignal.timeout(20_000) }); if (!response.ok) throw new Error(`Slack returned HTTP ${response.status}`); }
+  for (const chunk of chunks) { const response = await fetch(webhook, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: `Competitor Radar — ${date}`, blocks: chunk }), signal: AbortSignal.timeout(20_000) }); if (!response.ok) throw new Error(`Slack returned HTTP ${response.status}`); }
 }
+function slackWebhook(env: Env) { return (env as Env & { SLACK_WEBHOOK_URL?: string }).SLACK_WEBHOOK_URL?.trim() || ""; }
 function slackText(value: string) { return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 function canonicalUrl(value: string) { const url = new URL(value); url.hash = ""; for (const key of [...url.searchParams.keys()]) if (/^(utm_|fbclid|gclid|mc_|ref$|source$)/i.test(key)) url.searchParams.delete(key); url.searchParams.sort(); if (url.pathname !== "/") url.pathname = url.pathname.replace(/\/$/, ""); return url.toString(); }
 function slug(value: string) { return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
